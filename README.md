@@ -1,18 +1,23 @@
 # RAI Level Editor
 
-A visual tool for creating and editing configuration files (`.g`) for RAI. 
+A visual tool for creating and editing configuration files (`.g`) for the RAI robotics library.
 
-## Installation
+## Prerequisites
 
-1.  Open your terminal in this folder.
-2.  Install the package in editable mode:
-    ```
-    pip install -e .
-    ```
+This tool requires **Python 3**.
+
+It relies on `tkinter` for the GUI, which is usually included with Python. However, on some Linux distributions, you might need to install it manually.
+
+* **Ubuntu/Debian:** `sudo apt install python3-tk`
 
 ## Usage
 
-Once installed, you can run the editor from anywhere:
+  Run the module:
 
-```
-rai-editor
+    ```bash
+    python3 -m config_editor
+    ```
+
+    
+
+

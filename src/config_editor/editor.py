@@ -13,19 +13,16 @@ class EditorApp:
         self.root = root
         self.root.title("RAI Config Editor")
         
-        # --- FIX: Force a large default window size ---
         self.root.geometry("1200x950")
         
-        # World State
         self.world_w = DEFAULT_WORLD_SIZE
         self.world_h = DEFAULT_WORLD_SIZE
         self.base_file = DEFAULT_BASE_FILE
         self.camera_str = DEFAULT_CAMERA
         
-        # Viewport State (Dynamic)
         self.canvas_w = DEFAULT_WINDOW_SIZE
         self.canvas_h = DEFAULT_WINDOW_SIZE
-        self.ppm = 100 # Pixels Per Meter (Calculated dynamically)
+        self.ppm = 100 
         self.offset_x = 0
         self.offset_y = 0
 
@@ -40,16 +37,11 @@ class EditorApp:
         toolbar = tk.Frame(main_frame, height=40)
         toolbar.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
         
-        # Canvas - Background set to VOID color
-        # Note: 'width' and 'height' here are just requests; 
-        # pack(expand=True) + root.geometry() determines actual size.
         self.canvas = tk.Canvas(main_frame, bg=COLOR_VOID, width=DEFAULT_WINDOW_SIZE, height=DEFAULT_WINDOW_SIZE)
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
-        # Handle Window Resizing
         self.canvas.bind("<Configure>", self.on_resize)
         
-        # Mouse Bindings
         self.canvas.bind("<Button-1>", self.on_bg_click)
         self.canvas.bind("<Button-2>", self.on_canvas_right_click) 
         self.canvas.bind("<Button-3>", self.on_canvas_right_click) 
@@ -58,9 +50,8 @@ class EditorApp:
         prop_panel = tk.Frame(main_frame, width=200, bg="#cccccc", padx=10, pady=10)
         prop_panel.pack(side=tk.RIGHT, fill=tk.Y)
         
-        # Toolbar Buttons
         pad = 5
-        tk.Button(toolbar, text="NEW", command=self.new_file, bg="#ffdddd").pack(side=tk.LEFT, padx=(0, 15))
+        tk.Button(toolbar, text="New File", command=self.new_file, bg="#ffdddd").pack(side=tk.LEFT, padx=(0, 15))
         tk.Button(toolbar, text="Wall", command=lambda: self.add_obj("wall", 0.1, 1.5, "wall", "brown")).pack(side=tk.LEFT, padx=pad)
         tk.Button(toolbar, text="Obstacle", command=lambda: self.add_obj("obs", 0.3, 1.2, "movable", "#ffffff")).pack(side=tk.LEFT, padx=pad)
         tk.Button(toolbar, text="Goal Pair", command=self.add_goal_pair, bg="#e6e6fa").pack(side=tk.LEFT, padx=pad)
@@ -69,7 +60,6 @@ class EditorApp:
         tk.Button(toolbar, text="Save .g", command=self.save_file).pack(side=tk.RIGHT, padx=pad)
         tk.Button(toolbar, text="Load .g", command=self.load_file).pack(side=tk.RIGHT, padx=pad)
 
-        # Properties Panel
         tk.Label(prop_panel, text="Selection", font=("Arial", 11, "bold"), bg="#cccccc").pack(pady=10)
         self.lbl_name = tk.Label(prop_panel, text="None", bg="#cccccc")
         self.lbl_name.pack()
@@ -78,7 +68,6 @@ class EditorApp:
         self.lbl_pos = tk.Label(prop_panel, text="-", bg="#cccccc")
         self.lbl_pos.pack(pady=(10,0))
         
-        # Context Menu
         self.context_menu = tk.Menu(root, tearoff=0)
         self.context_menu.add_command(label="Rename", command=self.rename_selection)
         self.context_menu.add_separator()
@@ -89,7 +78,6 @@ class EditorApp:
         self.context_menu.add_command(label="Change Color", command=self.change_color)
         self.context_menu.add_command(label="Delete", command=self.delete_selected)
 
-        # Shortcuts
         for k in ["<Control-c>", "<Command-c>"]: root.bind(k, lambda e: self.copy_selection())
         for k in ["<Control-v>", "<Command-v>"]: root.bind(k, lambda e: self.paste_selection())
         for k in ["<Control-x>", "<Command-x>"]: root.bind(k, lambda e: self.cut_selection())
@@ -107,22 +95,17 @@ class EditorApp:
         self.selected_obj = None
         self.link_lines = []
 
-        # Trigger initial calculation
         self.update_scaling_constants()
 
-    # --- RESPONSIVE LOGIC ---
     def on_resize(self, event):
-        # Called whenever the window is resized (including on startup)
         self.canvas_w = event.width
         self.canvas_h = event.height
         self.update_scaling_constants()
         self.redraw_all()
 
     def update_scaling_constants(self):
-        # We add padding equal to 2x Wall Thickness (0.2m) + small margin
         margin_world = 0.25 
         
-        # Calculate Pixels Per Meter based on the SMALLER dimension
         ppm_w = self.canvas_w / (self.world_w + margin_world)
         ppm_h = self.canvas_h / (self.world_h + margin_world)
         
@@ -142,49 +125,38 @@ class EditorApp:
     def draw_environment(self):
         self.canvas.delete("background")
         
-        # Calculate floor rect dimensions in pixels
         fw_px = self.world_w * self.ppm
         fh_px = self.world_h * self.ppm
         
-        # Center points
         fx1 = self.offset_x - (fw_px / 2)
         fy1 = self.offset_y - (fh_px / 2)
         fx2 = fx1 + fw_px
         fy2 = fy1 + fh_px
         
-        # Floor
         self.canvas.create_rectangle(fx1, fy1, fx2, fy2, fill=COLOR_FLOOR, outline="black", tags="background")
         
-        # Grid
         steps = int(self.world_w)
-        # Vertical
+
         for i in range(steps + 1):
             ratio = i / steps
             x = fx1 + (ratio * fw_px)
             self.canvas.create_line(x, fy1, x, fy2, fill="#888", width=1, dash=(2, 4), tags="background")
-        # Horizontal
+        
         for i in range(steps + 1):
             ratio = i / steps
             y = fy1 + (ratio * fh_px)
             self.canvas.create_line(fx1, y, fx2, y, fill="#888", width=1, dash=(2, 4), tags="background")
 
-        # Axes
         self.canvas.create_line(self.offset_x, fy1, self.offset_x, fy2, fill="#444", width=2, tags="background")
         self.canvas.create_line(fx1, self.offset_y, fx2, self.offset_y, fill="#444", width=2, tags="background")
 
-        # Walls (Hug the floor EXACTLY)
         wall_thick_px = 0.1 * self.ppm 
         
-        # Top
         self.canvas.create_rectangle(fx1 - wall_thick_px, fy1 - wall_thick_px, fx2 + wall_thick_px, fy1, fill=COLOR_WALL_BASE, outline="black", tags="background")
-        # Bottom
         self.canvas.create_rectangle(fx1 - wall_thick_px, fy2, fx2 + wall_thick_px, fy2 + wall_thick_px, fill=COLOR_WALL_BASE, outline="black", tags="background")
-        # Left
         self.canvas.create_rectangle(fx1 - wall_thick_px, fy1, fx1, fy2, fill=COLOR_WALL_BASE, outline="black", tags="background")
-        # Right
         self.canvas.create_rectangle(fx2, fy1, fx2 + wall_thick_px, fy2, fill=COLOR_WALL_BASE, outline="black", tags="background")
 
-    # --- Logic methods ---
     def track_mouse(self, event):
         self.mouse_x_px = event.x
         self.mouse_y_px = event.y
