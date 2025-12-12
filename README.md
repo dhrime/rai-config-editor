@@ -14,7 +14,7 @@ It relies on `tkinter` for the GUI, which is usually included with Python. Howev
 
   Run the module:
 
-    ```bash
+    ```
     python3 -m config_editor
     ```
 
