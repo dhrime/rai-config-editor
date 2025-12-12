@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rai_config_editor"
+version = "1.0.0"
+description = "A visual editor for RAI configuration files"
+dependencies = [] 
+requires-python = ">=3.7"
+
+[project.scripts]
+rai-editor = "config_editor.__main__:main"
