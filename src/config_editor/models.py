@@ -20,7 +20,7 @@ class LevelObject:
         
         # --- DRAW ---
         if self.obj_type == "goal_location":
-            # Dashed + Floor Color fill
+
             self.rect_id = canvas.create_rectangle(0, 0, 0, 0, fill=COLOR_FLOOR, outline=self.color, width=3, dash=(6, 4), tags=tags)
         elif self.obj_type == "agent":
             self.rect_id = canvas.create_oval(0, 0, 0, 0, fill=color, outline="black", width=2, tags=tags)
@@ -29,7 +29,7 @@ class LevelObject:
             
         self.text_id = canvas.create_text(0, 0, text=name, fill="black", tags=tags)
         
-        # Handles
+
         for loc in ["nw", "n", "ne", "w", "e", "sw", "s", "se"]:
             hid = canvas.create_rectangle(0, 0, 0, 0, fill="#00ffff", outline="black", tags=(f"{self.name}_handle", "handle"))
             self.canvas.tag_bind(hid, "<Button-1>", lambda e, l=loc: self.on_handle_click(e, l))
@@ -39,7 +39,7 @@ class LevelObject:
 
         self.update_visuals()
         
-        # Bindings
+
         for item in [self.rect_id, self.text_id]:
             self.canvas.tag_bind(item, "<Button-1>", self.on_body_click)
             self.canvas.tag_bind(item, "<B1-Motion>", self.on_body_drag)
